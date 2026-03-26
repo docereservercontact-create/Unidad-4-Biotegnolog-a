@@ -2,148 +2,225 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Examen - Biotecnología</title>
+<title>Simulador UNAM - Biotecnología</title>
+
 <style>
 body{
     font-family: Arial;
-    background:#eef2f7;
+    margin:0;
+    background:#eef3f8;
 }
-.container{
-    max-width:900px;
-    margin:auto;
-    background:white;
-    padding:20px;
-    border-radius:10px;
-    box-shadow:0 0 10px rgba(0,0,0,0.2);
-}
-h2{text-align:center;}
-button{
-    padding:10px 20px;
-    margin-top:15px;
-    background:#28a745;
+
+.header{
+    background:#003366;
     color:white;
+    padding:15px;
+    text-align:center;
+}
+
+.main{
+    display:flex;
+}
+
+.sidebar{
+    width:220px;
+    background:#1c2b3a;
+    color:white;
+    height:100vh;
+    overflow-y:auto;
+    padding:10px;
+}
+
+.sidebar button{
+    width:45px;
+    height:45px;
+    margin:5px;
     border:none;
     border-radius:5px;
     cursor:pointer;
 }
+
+.answered{ background:#28a745; color:white;}
+.unanswered{ background:#ccc; }
+
+.content{
+    flex:1;
+    padding:20px;
+}
+
 .timer{
+    font-size:18px;
     font-weight:bold;
     color:red;
     text-align:right;
 }
-.question{margin:15px 0;}
-.result{margin-top:20px;}
+
+.question{
+    font-size:20px;
+}
+
+.options label{
+    display:block;
+    margin:10px 0;
+    cursor:pointer;
+}
+
+button{
+    padding:10px 15px;
+    margin:10px 5px;
+    border:none;
+    border-radius:5px;
+    background:#007bff;
+    color:white;
+    cursor:pointer;
+}
+
 </style>
 </head>
 
 <body>
 
-<div class="container" id="inicio">
-<h2>Examen Unidad 4</h2>
-<p>Biotecnología</p>
+<div class="header">
+<h2>Simulador UNAM - Biotecnología</h2>
+</div>
 
-<input type="text" id="nombre" placeholder="Nombre completo"><br><br>
-<input type="text" id="cuenta" placeholder="Número de cuenta"><br><br>
-
+<div id="inicio" style="padding:40px; text-align:center;">
+<input id="nombre" placeholder="Nombre completo"><br><br>
+<input id="cuenta" placeholder="Número de cuenta"><br><br>
 <button onclick="iniciar()">Iniciar examen</button>
 </div>
 
-<div class="container" id="examen" style="display:none;">
-<div class="timer" id="tiempo"></div>
-<form id="formulario"></form>
-<button onclick="terminar()">Finalizar</button>
+<div id="app" style="display:none;" class="main">
+
+<div class="sidebar" id="panel"></div>
+
+<div class="content">
+<div class="timer" id="timer"></div>
+
+<div id="pregunta"></div>
+<div id="opciones" class="options"></div>
+
+<button onclick="anterior()">Anterior</button>
+<button onclick="siguiente()">Siguiente</button>
+<button onclick="finalizar()">Finalizar</button>
 </div>
 
-<div class="container result" id="resultado" style="display:none;"></div>
+</div>
+
+<div id="resultado" style="display:none; padding:30px;"></div>
 
 <script>
 const preguntas = [
-{q:"La biotecnología se define como:",o:["Uso de máquinas","Uso de organismos vivos","Uso de energía","Uso de minerales"],r:1},
+{q:"La biotecnología se define como:",o:["Uso de máquinas","Uso de organismos vivos","Uso de minerales","Uso de energía"],r:1},
 {q:"Un organismo transgénico es:",o:["Natural","Mutado","Modificado genéticamente","Clonado"],r:2},
-{q:"La ingeniería genética permite:",o:["Crear ADN artificial","Modificar genes","Eliminar células","Crear proteínas"],r:1},
-{q:"La insulina producida por bacterias es un ejemplo de:",o:["Clonación","Biotecnología","Mutación","Reproducción"],r:1},
-{q:"Un cultivo resistente a plagas es:",o:["Natural","Transgénico","Clonado","Mutado"],r:1},
+{q:"La ingeniería genética permite:",o:["Modificar genes","Eliminar células","Crear proteínas","Dividir células"],r:0},
+{q:"La insulina producida por bacterias es ejemplo de:",o:["Mutación","Clonación","Biotecnología","Reproducción"],r:2},
+{q:"Un cultivo resistente a plagas es:",o:["Natural","Clonado","Transgénico","Mutado"],r:2},
 {q:"La clonación produce organismos:",o:["Diferentes","Idénticos","Mutados","Recombinantes"],r:1},
 {q:"La oveja Dolly fue:",o:["Mutación","Clonación","Transgénico","Natural"],r:1},
-{q:"La clonación terapéutica busca:",o:["Crear individuos","Generar tejidos","Modificar genes","Eliminar ADN"],r:1},
+{q:"La clonación terapéutica busca:",o:["Crear individuos","Generar tejidos","Eliminar genes","Duplicar ADN"],r:1},
 {q:"La clonación reproductiva genera:",o:["Órganos","Tejidos","Individuos completos","Células"],r:2},
-{q:"Una ventaja de los transgénicos es:",o:["Menor producción","Mayor resistencia","Menor calidad","Más plagas"],r:1},
-{q:"Una desventaja es:",o:["Mayor producción","Impacto ambiental","Mejor nutrición","Mayor resistencia"],r:1},
-{q:"Los organismos transgénicos contienen genes de:",o:["La misma especie","Otra especie","Ninguna","Solo bacterias"],r:1},
-{q:"La bioética estudia:",o:["ADN","Células","Aspectos morales","Proteínas"],r:2},
-{q:"La clonación humana reproductiva está:",o:["Permitida","Regulada","Prohibida en muchos países","Libre"],r:2},
-{q:"Un riesgo de transgénicos es:",o:["Mayor biodiversidad","Pérdida de biodiversidad","Mejor nutrición","Mayor producción"],r:1},
-{q:"La ingeniería genética trabaja con:",o:["Proteínas","Genes","Lípidos","Carbohidratos"],r:1},
-{q:"Un ejemplo de biotecnología es:",o:["Fotosíntesis","Fermentación","Respiración","Digestión"],r:1},
-{q:"Los antibióticos pueden producirse mediante:",o:["Clonación","Biotecnología","Mutación","Reproducción"],r:1},
-{q:"El ADN recombinante es:",o:["Natural","Modificado","Clonado","Destruido"],r:1},
-{q:"Los transgénicos pueden mejorar:",o:["Color","Nutrición","Tamaño","Todas"],r:3},
-{q:"La clonación usa:",o:["ADN idéntico","ADN diferente","ARN","Proteínas"],r:0},
-{q:"Una preocupación ética es:",o:["Producción","Manipulación genética","Crecimiento","División"],r:1},
-{q:"El objetivo de biotecnología es:",o:["Destruir organismos","Beneficio humano","Eliminar ADN","Reducir genes"],r:1},
-{q:"Los genes insertados se llaman:",o:["Mutaciones","Transgenes","Alelos","Proteínas"],r:1},
-{q:"La regulación legal busca:",o:["Eliminar ciencia","Controlar riesgos","Aumentar mutaciones","Reducir genes"],r:1},
-{q:"La clonación requiere:",o:["Una célula","Dos células","ADN idéntico","Proteínas"],r:2},
-{q:"La transferencia genética ocurre en:",o:["Biotecnología","Fotosíntesis","Respiración","Digestión"],r:0},
-{q:"Un uso médico es:",o:["Cultivos","Vacunas","Plantas","Animales"],r:1},
-{q:"Los OGM son:",o:["Organismos naturales","Organismos genéticamente modificados","Mutaciones","Clones"],r:1},
-{q:"La biotecnología moderna utiliza:",o:["Tecnología genética","Solo química","Solo física","Solo biología"],r:0}
+{q:"Una ventaja de transgénicos es:",o:["Mayor producción","Menor calidad","Más plagas","Menor resistencia"],r:0},
+{q:"Una desventaja es:",o:["Impacto ambiental","Mayor producción","Mejor nutrición","Resistencia"],r:0},
+{q:"Los transgénicos contienen genes de:",o:["Otra especie","La misma especie","Ninguna","Solo bacterias"],r:0},
+{q:"La bioética estudia:",o:["ADN","Aspectos morales","Proteínas","Células"],r:1},
+{q:"La clonación humana está:",o:["Permitida","Regulada","Prohibida en muchos países","Libre"],r:2},
+{q:"Un riesgo es:",o:["Pérdida de biodiversidad","Mayor biodiversidad","Mejor producción","Mayor calidad"],r:0},
+{q:"La ingeniería genética trabaja con:",o:["Genes","Lípidos","Carbohidratos","Proteínas"],r:0},
+{q:"Ejemplo de biotecnología:",o:["Fermentación","Respiración","Digestión","Fotosíntesis"],r:0},
+{q:"Antibióticos se producen mediante:",o:["Biotecnología","Mutación","Clonación","Reproducción"],r:0},
+{q:"ADN recombinante es:",o:["Natural","Modificado","Clonado","Destruido"],r:1},
+{q:"Transgénicos mejoran:",o:["Nutrición","Color","Tamaño","Todas"],r:3},
+{q:"Clonación usa:",o:["ADN idéntico","ADN distinto","ARN","Proteínas"],r:0},
+{q:"Problema ético:",o:["Manipulación genética","Producción","División","Crecimiento"],r:0},
+{q:"Objetivo biotecnología:",o:["Beneficio humano","Destruir organismos","Eliminar ADN","Reducir genes"],r:0},
+{q:"Genes insertados:",o:["Alelos","Transgenes","Proteínas","Mutaciones"],r:1},
+{q:"Regulación legal busca:",o:["Controlar riesgos","Eliminar ciencia","Reducir genes","Aumentar mutaciones"],r:0},
+{q:"Clonación requiere:",o:["ADN idéntico","Proteínas","ARN","Células distintas"],r:0},
+{q:"Transferencia genética ocurre en:",o:["Biotecnología","Digestión","Respiración","Fotosíntesis"],r:0},
+{q:"Uso médico:",o:["Vacunas","Plantas","Animales","Cultivos"],r:0},
+{q:"OGM significa:",o:["Organismos genéticamente modificados","Organismos naturales","Clones","Mutaciones"],r:0},
+{q:"Biotecnología moderna usa:",o:["Tecnología genética","Solo química","Solo física","Solo biología"],r:0}
 ];
 
-let tiempoTotal = preguntas.length * 65;
-let intervalo;
-
-function formatoTiempo(seg){
-let h=Math.floor(seg/3600);
-let m=Math.floor((seg%3600)/60);
-let s=seg%60;
-return `${h}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-}
+let actual=0;
+let respuestas=new Array(preguntas.length);
+let tiempoTotal = preguntas.length*65;
+let tiempoPregunta = 0;
 
 function iniciar(){
 document.getElementById("inicio").style.display="none";
-document.getElementById("examen").style.display="block";
+document.getElementById("app").style.display="flex";
 
-const form=document.getElementById("formulario");
+crearPanel();
+mostrar();
 
-preguntas.forEach((p,i)=>{
-let div=document.createElement("div");
-div.className="question";
-div.innerHTML=`<p>${i+1}. ${p.q}</p>`+
-p.o.map((op,j)=>`<label><input type="radio" name="p${i}" value="${j}"> ${op}</label><br>`).join("");
-form.appendChild(div);
-});
-
-intervalo=setInterval(()=>{
+setInterval(()=>{
 tiempoTotal--;
-document.getElementById("tiempo").innerText="Tiempo restante: "+formatoTiempo(tiempoTotal);
-if(tiempoTotal<=0) terminar();
+tiempoPregunta++;
+document.getElementById("timer").innerText=
+"Tiempo: "+formato(tiempoTotal)+" | Pregunta: "+tiempoPregunta+"s";
+if(tiempoTotal<=0) finalizar();
 },1000);
 }
 
-function terminar(){
-clearInterval(intervalo);
+function formato(s){
+let h=Math.floor(s/3600);
+let m=Math.floor((s%3600)/60);
+let sec=s%60;
+return `${h}:${m.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;
+}
 
-let aciertos=0;
-let form=document.forms["formulario"];
-
-preguntas.forEach((p,i)=>{
-let r=form[`p${i}`].value;
-if(r==p.r) aciertos++;
+function crearPanel(){
+let panel=document.getElementById("panel");
+preguntas.forEach((_,i)=>{
+let btn=document.createElement("button");
+btn.innerText=i+1;
+btn.className="unanswered";
+btn.onclick=()=>{actual=i; mostrar();};
+panel.appendChild(btn);
 });
+}
 
-let totalTiempo = (preguntas.length*65) - tiempoTotal;
+function mostrar(){
+let p=preguntas[actual];
+document.getElementById("pregunta").innerHTML=`<div class="question">${actual+1}. ${p.q}</div>`;
 
-document.getElementById("examen").style.display="none";
+document.getElementById("opciones").innerHTML=p.o.map((op,i)=>
+`<label><input type="radio" name="op" ${respuestas[actual]==i?'checked':''}
+onclick="responder(${i})"> ${op}</label>`
+).join("");
+
+tiempoPregunta=0;
+}
+
+function responder(i){
+respuestas[actual]=i;
+document.querySelectorAll(".sidebar button")[actual].className="answered";
+}
+
+function siguiente(){
+if(actual<preguntas.length-1){actual++; mostrar();}
+}
+
+function anterior(){
+if(actual>0){actual--; mostrar();}
+}
+
+function finalizar(){
+let aciertos=0;
+preguntas.forEach((p,i)=>{if(respuestas[i]==p.r) aciertos++;});
+
+document.getElementById("app").style.display="none";
 document.getElementById("resultado").style.display="block";
 
 document.getElementById("resultado").innerHTML=`
 <h2>Resultados</h2>
-<p><b>Nombre:</b> ${document.getElementById("nombre").value}</p>
-<p><b>Cuenta:</b> ${document.getElementById("cuenta").value}</p>
+<p><b>Nombre:</b> ${nombre.value}</p>
+<p><b>Cuenta:</b> ${cuenta.value}</p>
 <p><b>Aciertos:</b> ${aciertos}/30</p>
 <p><b>Calificación:</b> ${(aciertos/30*10).toFixed(2)}</p>
-<p><b>Tiempo total:</b> ${formatoTiempo(totalTiempo)}</p>
+<p><b>Tiempo total:</b> ${formato((preguntas.length*65)-tiempoTotal)}</p>
 <button onclick="window.print()">Descargar PDF</button>
 `;
 }
