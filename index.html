@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Examen - Biotecnología</title>
+<style>
+body{
+    font-family: Arial;
+    background:#eef2f7;
+}
+.container{
+    max-width:900px;
+    margin:auto;
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 0 10px rgba(0,0,0,0.2);
+}
+h2{text-align:center;}
+button{
+    padding:10px 20px;
+    margin-top:15px;
+    background:#28a745;
+    color:white;
+    border:none;
+    border-radius:5px;
+    cursor:pointer;
+}
+.timer{
+    font-weight:bold;
+    color:red;
+    text-align:right;
+}
+.question{margin:15px 0;}
+.result{margin-top:20px;}
+</style>
+</head>
+
+<body>
+
+<div class="container" id="inicio">
+<h2>Examen Unidad 4</h2>
+<p>Biotecnología</p>
+
+<input type="text" id="nombre" placeholder="Nombre completo"><br><br>
+<input type="text" id="cuenta" placeholder="Número de cuenta"><br><br>
+
+<button onclick="iniciar()">Iniciar examen</button>
+</div>
+
+<div class="container" id="examen" style="display:none;">
+<div class="timer" id="tiempo"></div>
+<form id="formulario"></form>
+<button onclick="terminar()">Finalizar</button>
+</div>
+
+<div class="container result" id="resultado" style="display:none;"></div>
+
+<script>
+const preguntas = [
+{q:"La biotecnología se define como:",o:["Uso de máquinas","Uso de organismos vivos","Uso de energía","Uso de minerales"],r:1},
+{q:"Un organismo transgénico es:",o:["Natural","Mutado","Modificado genéticamente","Clonado"],r:2},
+{q:"La ingeniería genética permite:",o:["Crear ADN artificial","Modificar genes","Eliminar células","Crear proteínas"],r:1},
+{q:"La insulina producida por bacterias es un ejemplo de:",o:["Clonación","Biotecnología","Mutación","Reproducción"],r:1},
+{q:"Un cultivo resistente a plagas es:",o:["Natural","Transgénico","Clonado","Mutado"],r:1},
+{q:"La clonación produce organismos:",o:["Diferentes","Idénticos","Mutados","Recombinantes"],r:1},
+{q:"La oveja Dolly fue:",o:["Mutación","Clonación","Transgénico","Natural"],r:1},
+{q:"La clonación terapéutica busca:",o:["Crear individuos","Generar tejidos","Modificar genes","Eliminar ADN"],r:1},
+{q:"La clonación reproductiva genera:",o:["Órganos","Tejidos","Individuos completos","Células"],r:2},
+{q:"Una ventaja de los transgénicos es:",o:["Menor producción","Mayor resistencia","Menor calidad","Más plagas"],r:1},
+{q:"Una desventaja es:",o:["Mayor producción","Impacto ambiental","Mejor nutrición","Mayor resistencia"],r:1},
+{q:"Los organismos transgénicos contienen genes de:",o:["La misma especie","Otra especie","Ninguna","Solo bacterias"],r:1},
+{q:"La bioética estudia:",o:["ADN","Células","Aspectos morales","Proteínas"],r:2},
+{q:"La clonación humana reproductiva está:",o:["Permitida","Regulada","Prohibida en muchos países","Libre"],r:2},
+{q:"Un riesgo de transgénicos es:",o:["Mayor biodiversidad","Pérdida de biodiversidad","Mejor nutrición","Mayor producción"],r:1},
+{q:"La ingeniería genética trabaja con:",o:["Proteínas","Genes","Lípidos","Carbohidratos"],r:1},
+{q:"Un ejemplo de biotecnología es:",o:["Fotosíntesis","Fermentación","Respiración","Digestión"],r:1},
+{q:"Los antibióticos pueden producirse mediante:",o:["Clonación","Biotecnología","Mutación","Reproducción"],r:1},
+{q:"El ADN recombinante es:",o:["Natural","Modificado","Clonado","Destruido"],r:1},
+{q:"Los transgénicos pueden mejorar:",o:["Color","Nutrición","Tamaño","Todas"],r:3},
+{q:"La clonación usa:",o:["ADN idéntico","ADN diferente","ARN","Proteínas"],r:0},
+{q:"Una preocupación ética es:",o:["Producción","Manipulación genética","Crecimiento","División"],r:1},
+{q:"El objetivo de biotecnología es:",o:["Destruir organismos","Beneficio humano","Eliminar ADN","Reducir genes"],r:1},
+{q:"Los genes insertados se llaman:",o:["Mutaciones","Transgenes","Alelos","Proteínas"],r:1},
+{q:"La regulación legal busca:",o:["Eliminar ciencia","Controlar riesgos","Aumentar mutaciones","Reducir genes"],r:1},
+{q:"La clonación requiere:",o:["Una célula","Dos células","ADN idéntico","Proteínas"],r:2},
+{q:"La transferencia genética ocurre en:",o:["Biotecnología","Fotosíntesis","Respiración","Digestión"],r:0},
+{q:"Un uso médico es:",o:["Cultivos","Vacunas","Plantas","Animales"],r:1},
+{q:"Los OGM son:",o:["Organismos naturales","Organismos genéticamente modificados","Mutaciones","Clones"],r:1},
+{q:"La biotecnología moderna utiliza:",o:["Tecnología genética","Solo química","Solo física","Solo biología"],r:0}
+];
+
+let tiempoTotal = preguntas.length * 65;
+let intervalo;
+
+function formatoTiempo(seg){
+let h=Math.floor(seg/3600);
+let m=Math.floor((seg%3600)/60);
+let s=seg%60;
+return `${h}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+}
+
+function iniciar(){
+document.getElementById("inicio").style.display="none";
+document.getElementById("examen").style.display="block";
+
+const form=document.getElementById("formulario");
+
+preguntas.forEach((p,i)=>{
+let div=document.createElement("div");
+div.className="question";
+div.innerHTML=`<p>${i+1}. ${p.q}</p>`+
+p.o.map((op,j)=>`<label><input type="radio" name="p${i}" value="${j}"> ${op}</label><br>`).join("");
+form.appendChild(div);
+});
+
+intervalo=setInterval(()=>{
+tiempoTotal--;
+document.getElementById("tiempo").innerText="Tiempo restante: "+formatoTiempo(tiempoTotal);
+if(tiempoTotal<=0) terminar();
+},1000);
+}
+
+function terminar(){
+clearInterval(intervalo);
+
+let aciertos=0;
+let form=document.forms["formulario"];
+
+preguntas.forEach((p,i)=>{
+let r=form[`p${i}`].value;
+if(r==p.r) aciertos++;
+});
+
+let totalTiempo = (preguntas.length*65) - tiempoTotal;
+
+document.getElementById("examen").style.display="none";
+document.getElementById("resultado").style.display="block";
+
+document.getElementById("resultado").innerHTML=`
+<h2>Resultados</h2>
+<p><b>Nombre:</b> ${document.getElementById("nombre").value}</p>
+<p><b>Cuenta:</b> ${document.getElementById("cuenta").value}</p>
+<p><b>Aciertos:</b> ${aciertos}/30</p>
+<p><b>Calificación:</b> ${(aciertos/30*10).toFixed(2)}</p>
+<p><b>Tiempo total:</b> ${formatoTiempo(totalTiempo)}</p>
+<button onclick="window.print()">Descargar PDF</button>
+`;
+}
+</script>
+
+</body>
+</html>
